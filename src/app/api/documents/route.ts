@@ -4,6 +4,13 @@ import { Document } from '@/models/Document';
 
 export async function GET() {
   try {
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
+    
     await connectToDatabase();
     const documents = await Document.find({ isPublic: true }).sort({ createdAt: -1 });
     return NextResponse.json(documents);

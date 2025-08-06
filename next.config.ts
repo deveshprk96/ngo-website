@@ -6,7 +6,16 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
-  }
+  },
+  // Skip static optimization for API routes that need database
+  experimental: {
+    serverComponentsExternalPackages: ['mongoose'],
+  },
+  env: {
+    MONGODB_URI: process.env.MONGODB_URI || '',
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'dev-secret-key',
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+  },
 };
 
 export default nextConfig;
