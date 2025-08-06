@@ -25,6 +25,13 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 503 }
+      );
+    }
+    
     await connectToDatabase();
     const data = await request.json();
     

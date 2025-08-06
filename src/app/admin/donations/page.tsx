@@ -105,63 +105,136 @@ export default function DonationsManagement() {
 
   const handleAddDonation = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    if (!newDonation.donorName.trim() || !newDonation.email.trim() || !newDonation.amount.trim()) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    const amount = parseFloat(newDonation.amount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
     try {
+      console.log('Submitting donation:', newDonation);
+      
       const response = await fetch('/api/donations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...newDonation,
-          amount: parseFloat(newDonation.amount),
+          donorName: newDonation.donorName.trim(),
+          donorEmail: newDonation.email.trim(),
+          donorPhone: newDonation.phone.trim(),
+          amount: amount,
+          donationType: newDonation.purpose,
+          paymentMethod: newDonation.paymentMode === 'cash' ? 'Cash' : 
+                       newDonation.paymentMode === 'online' ? 'UPI' :
+                       newDonation.paymentMode === 'cheque' ? 'Cheque' : 'Bank Transfer',
+          status: 'Completed',
           date: new Date().toISOString(),
         }),
       });
 
+      console.log('Response status:', response.status);
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('Donation added successfully:', result);
+        
+        // Refresh donations list
         await fetchDonations();
+        
+        // Close modal and reset form
         setShowAddModal(false);
-        setNewDonation({
-          donorName: '',
-          email: '',
-          phone: '',
-          amount: '',
-          purpose: 'General Donation',
-          paymentMode: 'cash'
-        });
+        resetForm();
+        
+        alert('Donation added successfully!');
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API error:', errorData);
+        alert(`Failed to add donation: ${errorData.error || 'Server error'}`);
       }
     } catch (error) {
       console.error('Error adding donation:', error);
+      alert(`Failed to add donation: ${error instanceof Error ? error.message : 'Network error'}`);
     }
+  };
+
+  // Reset form function
+  const resetForm = () => {
+    setNewDonation({
+      donorName: '',
+      email: '',
+      phone: '',
+      amount: '',
+      purpose: 'General Donation',
+      paymentMode: 'cash'
+    });
+  };
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    resetForm();
   };
 
   const generateReceipt = async (donationId: string) => {
     setGeneratingReceipt(donationId);
     try {
+      console.log('Generating receipt for donation:', donationId);
+      
       const response = await fetch(`/api/generate-receipt/${donationId}`, {
-        method: 'GET', // Changed from POST to GET
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
+      console.log('Response status:', response.status);
+
       if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `donation-receipt-${donationId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
+        const contentType = response.headers.get('content-type');
+        console.log('Content type:', contentType);
         
-        // Update the donation status
-        await fetchDonations();
-        alert('Receipt downloaded successfully!');
+        if (contentType && contentType.includes('application/pdf')) {
+          const blob = await response.blob();
+          console.log('PDF blob size:', blob.size);
+          
+          if (blob.size === 0) {
+            throw new Error('Received empty PDF file');
+          }
+          
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = `donation-receipt-${donationId.substring(0, 8).toUpperCase()}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          
+          // Update the donation status
+          await fetchDonations();
+          alert('Receipt downloaded successfully!');
+        } else {
+          const errorData = await response.json();
+          console.error('API error:', errorData);
+          alert(`Failed to generate receipt: ${errorData.error || 'Unknown error'}`);
+        }
       } else {
-        alert('Failed to generate receipt. Please try again.');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API error:', errorData);
+        alert(`Failed to generate receipt: ${errorData.error || 'Server error'}`);
       }
     } catch (error) {
       console.error('Error generating receipt:', error);
-      alert('Failed to generate receipt. Please try again.');
+      alert(`Failed to generate receipt: ${error instanceof Error ? error.message : 'Network error'}`);
     } finally {
       setGeneratingReceipt(null);
     }
@@ -403,9 +476,26 @@ export default function DonationsManagement() {
 
       {/* Add Donation Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleCloseModal();
+            }
+          }}
+        >
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Donation</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Add New Donation</h3>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             
             <form onSubmit={handleAddDonation} className="space-y-4">
               <div>
@@ -494,14 +584,15 @@ export default function DonationsManagement() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={handleCloseModal}
                   className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!newDonation.donorName.trim() || !newDonation.email.trim() || !newDonation.amount.trim()}
                 >
                   Add Donation
                 </button>

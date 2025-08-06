@@ -1,5 +1,53 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
+import { Donation } from '@/models/Donation';
+
+// Helper function to convert amount to words (simplified version)
+function convertAmountToWords(amount: number): string {
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 
+                'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  
+  if (amount === 0) return 'Zero Only';
+  
+  let words = '';
+  
+  // Handle thousands
+  if (amount >= 1000) {
+    let thousands = Math.floor(amount / 1000);
+    if (thousands >= 100) {
+      words += ones[Math.floor(thousands / 100)] + ' Hundred ';
+      thousands %= 100;
+    }
+    if (thousands >= 20) {
+      words += tens[Math.floor(thousands / 10)] + ' ';
+      thousands %= 10;
+    }
+    if (thousands > 0) {
+      words += ones[thousands] + ' ';
+    }
+    words += 'Thousand ';
+    amount %= 1000;
+  }
+  
+  // Handle hundreds
+  if (amount >= 100) {
+    words += ones[Math.floor(amount / 100)] + ' Hundred ';
+    amount %= 100;
+  }
+  
+  // Handle tens and ones
+  if (amount >= 20) {
+    words += tens[Math.floor(amount / 10)] + ' ';
+    amount %= 10;
+  }
+  
+  if (amount > 0) {
+    words += ones[amount] + ' ';
+  }
+  
+  return words.trim() + ' Only';
+}
 
 export interface MemberIdCardData {
   name: string;
@@ -230,118 +278,234 @@ export async function generateAppointmentLetter(member: Member): Promise<Buffer>
 
 export async function generateDonationReceipt(donation: Donation): Promise<Buffer> {
   try {
+    console.log('Starting PDF generation for donation:', donation._id);
+    
+    // Validate donation data
+    if (!donation || !donation._id) {
+      throw new Error('Invalid donation data provided');
+    }
+    
     const pdf = new jsPDF();
 
-    // Header
-    pdf.setFillColor(37, 99, 235);
-    pdf.rect(0, 0, 210, 35, 'F');
-    
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(22);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('HOPE FOUNDATION', 105, 18, { align: 'center' });
-    pdf.setFontSize(14);
-    pdf.text('DONATION RECEIPT', 105, 28, { align: 'center' });
+    // White background
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(0, 0, 210, 297, 'F');
 
-    // Receipt details
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(11);
-    pdf.text(`Receipt No: ${donation._id.substring(0, 8).toUpperCase()}`, 20, 50);
-    pdf.text(`Date: ${donation.createdAt.toLocaleDateString('en-IN')}`, 150, 50);
-
-    // Donor details
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text('Donor Details:', 20, 70);
-    
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.text(`Name: ${donation.donorName}`, 20, 80);
-    pdf.text(`Email: ${donation.donorEmail}`, 20, 87);
-    pdf.text(`Phone: ${donation.donorPhone}`, 20, 94);
-
-    // Donation details table
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text('Donation Details:', 20, 115);
-
-    // Table headers
-    pdf.setFillColor(240, 240, 240);
-    pdf.rect(20, 125, 170, 8, 'F');
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(10);
-    pdf.text('Description', 25, 131);
-    pdf.text('Type', 80, 131);
-    pdf.text('Payment Method', 120, 131);
-    pdf.text('Amount (₹)', 160, 131);
-
-    // Table content
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('General Donation', 25, 142);
-    pdf.text(donation.donationType, 80, 142);
-    pdf.text(donation.paymentMethod, 120, 142);
-    pdf.text(donation.amount.toLocaleString('en-IN'), 165, 142);
-
-    // Transaction details
-    if (donation.transactionId) {
-      pdf.text(`Transaction ID: ${donation.transactionId}`, 20, 155);
+    // Add watermark logo in background
+    try {
+      // Very light watermark in center - using light colors instead of opacity
+      pdf.addImage('/logo-watermark.svg', 'SVG', 60, 80, 90, 120, undefined, 'NONE');
+    } catch (logoError) {
+      console.warn('Failed to add logo watermark:', logoError);
+      // Fallback to light text watermark
+      pdf.setTextColor(240, 240, 250);
+      pdf.setFontSize(40);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('BSS', 105, 150, { 
+        align: 'center', 
+        angle: 45 
+      });
     }
-    pdf.text(`Status: ${donation.status}`, 20, 162);
 
-    // Total amount box
-    pdf.setFillColor(37, 99, 235);
-    pdf.rect(120, 175, 70, 15, 'F');
+    // Modern header with organization branding
+    pdf.setFillColor(59, 130, 246); // Blue header
+    pdf.rect(0, 0, 210, 55, 'F');
+    
+    // Header content
     pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text(`Total: ₹${donation.amount.toLocaleString('en-IN')}`, 155, 185, { align: 'center' });
+    pdf.text('BAWALIYA SEVA SANSTHAN', 105, 20, { align: 'center' });
+    
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('His Divine Grace A.C. Bhaktivedanta Swami Prabhupada', 105, 30, { align: 'center' });
+    
+    // Pink "Donation Receipt" badge
+    pdf.setFillColor(236, 72, 153); // Pink
+    pdf.rect(140, 35, 60, 15, 'F');
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Donation Receipt', 170, 44, { align: 'center' });
 
-    // Thank you message
+    // Receipt details section (yellow background)
+    pdf.setFillColor(254, 249, 195); // Light yellow
+    pdf.rect(10, 60, 190, 25, 'F');
+    pdf.setDrawColor(251, 191, 36);
+    pdf.setLineWidth(1);
+    pdf.rect(10, 60, 190, 25, 'S');
+    
+    const receiptNumber = donation._id.toString().substring(0, 12).toUpperCase();
+    const donationDate = donation.createdAt ? new Date(donation.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
+    
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(11);
-    const thankYouText = [
-      'Thank you for your generous donation to Hope Foundation.',
-      'Your contribution will help us continue our mission of creating positive social impact.',
-      'This receipt serves as proof of your donation for tax purposes under Section 80G.',
-      '',
-      'With gratitude,',
-      'Hope Foundation Team'
-    ];
-
-    let yPos = 210;
-    thankYouText.forEach(line => {
-      pdf.text(line, 20, yPos);
-      yPos += 7;
-    });
-
-    // QR code for verification
-    const qrData = JSON.stringify({
-      receiptId: donation._id.substring(0, 8).toUpperCase(),
-      amount: donation.amount,
-      date: donation.createdAt.toISOString().split('T')[0],
-      donor: donation.donorName
-    });
-
-    const qrCodeDataURL = await QRCode.toDataURL(qrData, {
-      width: 80,
-      margin: 1
-    });
-
-    pdf.addImage(qrCodeDataURL, 'PNG', 150, 200, 25, 25);
-
-    // Footer
-    pdf.setFillColor(37, 99, 235);
-    pdf.rect(0, 270, 210, 25, 'F');
+    pdf.setFontSize(9);
+    pdf.text('BSS, Community Area, Your City, State, 123456', 15, 70);
+    pdf.text('400049', 15, 77);
     
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(8);
-    pdf.text('Hope Foundation | Registered under Section 12A & 80G | PAN: XXXXX0000X', 105, 282, { align: 'center' });
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Donation Receipt No.', 130, 70);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`BSS-${receiptNumber}`, 130, 77);
 
-    return Buffer.from(pdf.output('arraybuffer'));
+    // Donor Details section (light purple background)
+    pdf.setFillColor(243, 232, 255); // Light purple
+    pdf.rect(10, 90, 120, 60, 'F');
+    pdf.setDrawColor(168, 85, 247);
+    pdf.setLineWidth(1);
+    pdf.rect(10, 90, 120, 60, 'S');
+    
+    pdf.setFillColor(168, 85, 247); // Purple header
+    pdf.rect(10, 90, 120, 15, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(10);
+    pdf.text('Donor Details', 70, 100, { align: 'center' });
+    
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.text(`Date: ${donationDate}`, 15, 115);
+    pdf.text(`Name: ${donation.donorName || 'Anonymous Donor'}`, 15, 125);
+    pdf.text('Donor PAN No: Not Available', 15, 135);
+    pdf.text(`Mobile: ${donation.donorPhone || 'Not provided'}`, 15, 145);
+
+    // Mode of Payment section (light purple background)
+    pdf.setFillColor(243, 232, 255); // Light purple
+    pdf.rect(135, 90, 65, 60, 'F');
+    pdf.setDrawColor(168, 85, 247);
+    pdf.setLineWidth(1);
+    pdf.rect(135, 90, 65, 60, 'S');
+    
+    pdf.setFillColor(168, 85, 247); // Purple header
+    pdf.rect(135, 90, 65, 15, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
+    pdf.text('Mode of Payment', 167.5, 100, { align: 'center' });
+    
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    const paymentMethod = donation.paymentMethod || 'Online';
+    pdf.text(paymentMethod, 167.5, 125, { align: 'center' });
+
+    // Payment Details section (light purple background)
+    pdf.setFillColor(243, 232, 255); // Light purple
+    pdf.rect(135, 155, 65, 35, 'F');
+    pdf.setDrawColor(168, 85, 247);
+    pdf.setLineWidth(1);
+    pdf.rect(135, 155, 65, 35, 'S');
+    
+    pdf.setFillColor(168, 85, 247); // Purple header
+    pdf.rect(135, 155, 65, 12, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    pdf.text('Payment Details', 167.5, 163, { align: 'center' });
+    
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    const transactionId = donation.transactionId || `AUTO${receiptNumber.substring(0, 8)}`;
+    pdf.text(transactionId, 167.5, 180, { align: 'center' });
+
+    // Purpose of Donation section (light purple background)
+    pdf.setFillColor(243, 232, 255); // Light purple
+    pdf.rect(10, 155, 120, 35, 'F');
+    pdf.setDrawColor(168, 85, 247);
+    pdf.setLineWidth(1);
+    pdf.rect(10, 155, 120, 35, 'S');
+    
+    pdf.setFillColor(168, 85, 247); // Purple header
+    pdf.rect(10, 155, 120, 12, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    pdf.text('Purpose of Donation (Corpus / General / Others)', 70, 163, { align: 'center' });
+    
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    const purpose = donation.donationType || 'General Donation';
+    pdf.text(purpose, 70, 180, { align: 'center' });
+
+    // Donation Amount section (light background)
+    pdf.setFillColor(243, 232, 255); // Light purple
+    pdf.rect(10, 195, 120, 25, 'F');
+    pdf.setDrawColor(168, 85, 247);
+    pdf.setLineWidth(1);
+    pdf.rect(10, 195, 120, 25, 'S');
+    
+    pdf.setFillColor(168, 85, 247); // Purple header
+    pdf.rect(10, 195, 120, 10, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    pdf.text('Donation Amount in Rupees', 70, 202, { align: 'center' });
+    
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    const amount = Number(donation.amount) || 0;
+    const amountInWords = convertAmountToWords(amount);
+    pdf.text(amountInWords, 70, 215, { align: 'center' });
+
+    // Amount in numbers (pink box)
+    pdf.setFillColor(236, 72, 153); // Pink
+    pdf.rect(135, 195, 65, 25, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    pdf.text('Rupees', 167.5, 202, { align: 'center' });
+    pdf.setFontSize(16);
+    pdf.text(`₹ ${amount.toLocaleString('en-IN')}/-`, 167.5, 215, { align: 'center' });
+
+    // Registration details (yellow background)
+    pdf.setFillColor(254, 249, 195); // Light yellow
+    pdf.rect(10, 225, 190, 30, 'F');
+    pdf.setDrawColor(251, 191, 36);
+    pdf.setLineWidth(1);
+    pdf.rect(10, 225, 190, 30, 'S');
+    
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.text('Registered Office: Community Area, Your City - 400 049. Registered under Public Trust Act 1950,', 15, 235);
+    pdf.text('vide Regn. No.: BSS-2179 (Bom). Unique Regn. No. (80G): AAATB0017PF20219', 15, 243);
+
+    // Terms and Conditions section
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
+    pdf.text('Please note Terms and Conditions (T&C):', 15, 265);
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7);
+    pdf.text('• This donation receipt is an acknowledgement only and not for the purpose of claiming 80G deduction.', 15, 272);
+    pdf.text('• Form No. 10BE, i.e., Certificate of donation under clause (ix) of sub-section (5) of section 80G of the', 15, 278);
+    pdf.text('  Income Tax Act, 1961, will be issued to you as per provisions of Income-tax Act, 1961.', 15, 284);
+    pdf.text('• For all types of donations, full legal name and address with PAN are required.', 15, 290);
+
+    console.log('Converting PDF to buffer...');
+    const pdfOutput = pdf.output('arraybuffer');
+    const buffer = Buffer.from(pdfOutput);
+    console.log('PDF buffer created, length:', buffer.length);
+    
+    if (buffer.length === 0) {
+      throw new Error('PDF buffer is empty');
+    }
+    
+    return buffer;
   } catch (error) {
     console.error('Error generating donation receipt:', error);
-    throw new Error('Failed to generate donation receipt');
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      donationId: donation?._id?.toString() || 'No donation ID'
+    });
+    throw new Error(`Failed to generate donation receipt: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

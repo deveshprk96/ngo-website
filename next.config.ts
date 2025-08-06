@@ -7,10 +7,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Skip static optimization for API routes that need database
-  experimental: {
-    serverComponentsExternalPackages: ['mongoose'],
-  },
+  // External packages for server components
+  serverExternalPackages: ['mongoose'],
   env: {
     MONGODB_URI: process.env.MONGODB_URI || '',
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'dev-secret-key',
