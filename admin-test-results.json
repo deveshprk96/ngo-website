@@ -1,0 +1,100 @@
+{
+  "timestamp": "2025-08-06T08:57:32.506Z",
+  "summary": {
+    "total": 11,
+    "passed": 8,
+    "failed": 2,
+    "warnings": 1,
+    "successRate": 73
+  },
+  "tests": [
+    {
+      "name": "Admin login page accessibility",
+      "category": "Admin Authentication",
+      "status": "passed",
+      "duration": "523ms",
+      "message": "Admin login page accessible",
+      "details": null
+    },
+    {
+      "name": "Admin dashboard accessibility",
+      "category": "Admin Authentication",
+      "status": "passed",
+      "duration": "111ms",
+      "message": "Admin dashboard accessible",
+      "details": null
+    },
+    {
+      "name": "Admin events page loads",
+      "category": "Admin Pages",
+      "status": "passed",
+      "duration": "149ms",
+      "message": "Admin events page loads successfully",
+      "details": null
+    },
+    {
+      "name": "Admin donations page loads",
+      "category": "Admin Pages",
+      "status": "passed",
+      "duration": "130ms",
+      "message": "Admin donations page loads successfully",
+      "details": null
+    },
+    {
+      "name": "Admin gallery page loads",
+      "category": "Admin Pages",
+      "status": "passed",
+      "duration": "105ms",
+      "message": "Admin gallery page loads successfully",
+      "details": null
+    },
+    {
+      "name": "Events CRUD operations",
+      "category": "Admin Event Management",
+      "status": "failed",
+      "duration": "263ms",
+      "message": "Event operations mostly failed (3/6)",
+      "details": null
+    },
+    {
+      "name": "Donations CRUD operations",
+      "category": "Admin Donation Management",
+      "status": "warning",
+      "duration": "285ms",
+      "message": "Most donation operations successful (3/4)",
+      "details": null
+    },
+    {
+      "name": "Gallery CRUD operations",
+      "category": "Admin Gallery Management",
+      "status": "failed",
+      "duration": "231ms",
+      "message": "Gallery operations mostly failed (2/5)",
+      "details": null
+    },
+    {
+      "name": "Data reflection across pages",
+      "category": "Data Consistency",
+      "status": "passed",
+      "duration": "571ms",
+      "message": "All data reflections working (4/4)",
+      "details": null
+    },
+    {
+      "name": "API response times",
+      "category": "Performance",
+      "status": "passed",
+      "duration": "160ms",
+      "message": "All APIs respond quickly (160ms)",
+      "details": null
+    },
+    {
+      "name": "Database integration",
+      "category": "Database",
+      "status": "passed",
+      "duration": "89ms",
+      "message": "Database integration working for all collections",
+      "details": null
+    }
+  ]
+}

@@ -1,0 +1,260 @@
+{
+  "timestamp": "2025-08-06T08:20:34.155Z",
+  "summary": {
+    "total": 31,
+    "passed": 30,
+    "failed": 1,
+    "warnings": 0,
+    "successRate": 97
+  },
+  "tests": [
+    {
+      "name": "Package.json exists",
+      "category": "File Structure",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "package.json found",
+      "details": null
+    },
+    {
+      "name": "Next.js config exists",
+      "category": "File Structure",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "next.config.ts found",
+      "details": null
+    },
+    {
+      "name": "Main layout exists",
+      "category": "File Structure",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "layout.tsx found",
+      "details": null
+    },
+    {
+      "name": "Navigation component exists",
+      "category": "Components",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Navigation.tsx found",
+      "details": null
+    },
+    {
+      "name": "Navigation has organization name",
+      "category": "Components",
+      "status": "passed",
+      "duration": "1ms",
+      "message": "Organization name present in navigation",
+      "details": null
+    },
+    {
+      "name": "Navigation excludes Programs button",
+      "category": "Components",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Programs button successfully removed",
+      "details": null
+    },
+    {
+      "name": "Admin dashboard exists",
+      "category": "Admin Pages",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Admin dashboard found",
+      "details": null
+    },
+    {
+      "name": "Admin login page exists",
+      "category": "Admin Pages",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Admin login page found",
+      "details": null
+    },
+    {
+      "name": "Admin events page exists",
+      "category": "Admin Pages",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Admin events page found",
+      "details": null
+    },
+    {
+      "name": "Admin donations page exists",
+      "category": "Admin Pages",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Admin donations page found",
+      "details": null
+    },
+    {
+      "name": "Admin gallery page exists",
+      "category": "Admin Pages",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Admin gallery page found",
+      "details": null
+    },
+    {
+      "name": "Auth API route exists",
+      "category": "API Routes",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "NextAuth API route found",
+      "details": null
+    },
+    {
+      "name": "Events API route exists",
+      "category": "API Routes",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Events API route found",
+      "details": null
+    },
+    {
+      "name": "Donations API route exists",
+      "category": "API Routes",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Donations API route found",
+      "details": null
+    },
+    {
+      "name": "Admin model exists",
+      "category": "Database Models",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Admin model found",
+      "details": null
+    },
+    {
+      "name": "Event model exists",
+      "category": "Database Models",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Event model found",
+      "details": null
+    },
+    {
+      "name": "Donation model exists",
+      "category": "Database Models",
+      "status": "passed",
+      "duration": "0ms",
+      "message": "Donation model found",
+      "details": null
+    },
+    {
+      "name": "Dependencies install check",
+      "category": "Dependencies",
+      "status": "passed",
+      "duration": "1011ms",
+      "message": "All dependencies installed correctly",
+      "details": null
+    },
+    {
+      "name": "TypeScript compilation",
+      "category": "Build",
+      "status": "failed",
+      "duration": "3176ms",
+      "message": "TypeScript compilation failed",
+      "details": "Command failed: npx tsc --noEmit"
+    },
+    {
+      "name": "Next.js build test",
+      "category": "Build",
+      "status": "passed",
+      "duration": "14028ms",
+      "message": "Next.js build successful",
+      "details": null
+    },
+    {
+      "name": "Homepage loads",
+      "category": "Runtime",
+      "status": "passed",
+      "duration": "2682ms",
+      "message": "Homepage loaded (200)",
+      "details": null
+    },
+    {
+      "name": "About section accessible",
+      "category": "Runtime",
+      "status": "passed",
+      "duration": "230ms",
+      "message": "About section accessible",
+      "details": null
+    },
+    {
+      "name": "Events page loads",
+      "category": "Runtime",
+      "status": "passed",
+      "duration": "486ms",
+      "message": "Events page loads successfully",
+      "details": null
+    },
+    {
+      "name": "Team page loads",
+      "category": "Runtime",
+      "status": "passed",
+      "duration": "396ms",
+      "message": "Team page loads successfully",
+      "details": null
+    },
+    {
+      "name": "Gallery page loads",
+      "category": "Runtime",
+      "status": "passed",
+      "duration": "359ms",
+      "message": "Gallery page loads successfully",
+      "details": null
+    },
+    {
+      "name": "News/Posts page loads",
+      "category": "Runtime",
+      "status": "passed",
+      "duration": "244ms",
+      "message": "News/Posts page loads successfully",
+      "details": null
+    },
+    {
+      "name": "Donate page loads",
+      "category": "Runtime",
+      "status": "passed",
+      "duration": "389ms",
+      "message": "Donate page loads successfully",
+      "details": null
+    },
+    {
+      "name": "Admin login page loads",
+      "category": "Runtime",
+      "status": "passed",
+      "duration": "393ms",
+      "message": "Admin login page loads successfully",
+      "details": null
+    },
+    {
+      "name": "Events API responds",
+      "category": "API",
+      "status": "passed",
+      "duration": "748ms",
+      "message": "Events API responds successfully",
+      "details": null
+    },
+    {
+      "name": "Donations API responds",
+      "category": "API",
+      "status": "passed",
+      "duration": "172ms",
+      "message": "Donations API responds successfully",
+      "details": null
+    },
+    {
+      "name": "Gallery API responds",
+      "category": "API",
+      "status": "passed",
+      "duration": "184ms",
+      "message": "Gallery API responds successfully",
+      "details": null
+    }
+  ]
+}
